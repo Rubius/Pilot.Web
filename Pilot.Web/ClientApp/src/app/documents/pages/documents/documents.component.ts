@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef } from '@angular/core';
 import { ActivatedRoute, ParamMap, NavigationStart, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Subscription, Subject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import { BsModalService, BsModalRef, ModalOptions } from 'ngx-bootstrap/modal';
 
 import { SystemIds } from '../../../core/data/system.ids';
 import { RepositoryService } from '../../../core/repository.service';
@@ -29,8 +30,9 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   private navigationSubscription: Subscription;
   private routerSubscription: Subscription;
   private objectCardChangeSubscription: Subscription;
-  private documentCardModal = "objectCardModal";
+  private documentCardModal = 'objectCardModal';
 
+  modalRef: BsModalRef;
   checked = new Array<INode>();
   checkedNode: IObject;
   currentItem: ObjectNode;
@@ -47,7 +49,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     private readonly navigationService: DocumentsNavigationService,
     private readonly documentsService: DocumentsService,
     private readonly scrollPositionService: ScrollPositionService,
-    private readonly modalService: ModalService) {
+    private readonly modalService: ModalService,
+    private readonly bsModalService: BsModalService) {
 
   }
 
@@ -65,8 +68,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
           isSource = true;
       }
 
-      this.repository.getObjectAsync(id)
-        .then(source => {
+      const promise = this.repository.getObjectAsync(id);
+        promise.then(source => {
           this.currentItem = new ObjectNode(source, isSource, this.typeIconService, this.ngUnsubscribe, this.translate);
           this.isLoading = false;
         })
@@ -81,7 +84,6 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         const startEvent = <NavigationStart>event;
         if (startEvent.navigationTrigger === 'popstate') {
           this.documentsService.changeClearChecked(true);
-          this.repository.requestType = RequestType.FromCache;
         }
       }
     });
@@ -97,9 +99,12 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.navigationSubscription.unsubscribe();
-    this.routerSubscription.unsubscribe();
-    this.objectCardChangeSubscription.unsubscribe();
+    if (this.navigationSubscription)
+      this.navigationSubscription.unsubscribe();
+    if (this.routerSubscription)
+      this.routerSubscription.unsubscribe();
+    if (this.objectCardChangeSubscription)  
+      this.objectCardChangeSubscription.unsubscribe();
 
     // cancel
     this.ngUnsubscribe.next();
@@ -133,7 +138,21 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     this.checked = nodes;
   }
 
-  onError(error): void {
+  onDownloadStarted(template: TemplateRef<any>): void {
+    const config = new ModalOptions();
+    config.backdrop = true;
+    config.ignoreBackdropClick = true;
+    config.animated = false;
+    config.class = 'modal-dialog-centered';
+
+    this.modalRef = this.bsModalService.show(template, config);
+  }
+
+  onDownloadFinished(any): void {
+    this.bsModalService.hide();
+  }
+
+  onError(error: HttpErrorResponse): void {
     this.error = error;
   }
 
