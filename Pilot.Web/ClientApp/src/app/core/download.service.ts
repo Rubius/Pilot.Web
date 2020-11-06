@@ -18,8 +18,11 @@ export class DownloadService {
         .pipe(first())
         .subscribe(data => {
           const file = FilesSelector.getSourceFile(object.actualFileSnapshot.files);
-          const fileExt = file.name.split('.').pop();
-          const name = object.title; // + '.' + fileExt;
+          const fileExt = '.' + file.name.split('.').pop();
+          let name = object.title;
+          if (!name.endsWith(fileExt)) {
+            name = object.title + '.' + fileExt;
+          }
           this.runLoadFile(data, name, "application/octet-stream");
           resolve(true);
         }, err => reject(err));

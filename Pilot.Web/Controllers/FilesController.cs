@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Ascon.Pilot.Common;
 using Ascon.Pilot.DataClasses;
@@ -30,7 +32,8 @@ namespace Pilot.Web.Controllers
             IDocumentRender documentRender, 
             IFilesStorage filesStorage, 
             IFileSaver fileSaver, 
-            IFilesOperationService filesOperationService)
+            IFilesOperationService filesOperationService,
+            IFileStorageProvider fileStorageProvider)
         {
             _contextService = contextService;
             _documentRender = documentRender;

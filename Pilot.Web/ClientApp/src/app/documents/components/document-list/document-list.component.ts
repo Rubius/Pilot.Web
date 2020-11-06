@@ -167,7 +167,7 @@ export class DocumentListComponent implements OnInit, OnDestroy, OnChanges, Afte
     }
 
     if (this.canCheck) {
-      this.repository.requestType = RequestType.New;
+      this.repository.setRequestType(RequestType.New);
       this.clearChecked();
       this.nodes = null;
       this.documentsService.changeObjectForCard(null);
@@ -181,7 +181,6 @@ export class DocumentListComponent implements OnInit, OnDestroy, OnChanges, Afte
 
     if (!node.id)
       return;
-    }
 
     if (!event.ctrlKey) {
       this.clearChecked();
